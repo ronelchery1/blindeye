@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lucky Cat</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    overflow: hidden;
+    font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+  }
+
+  #stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #cat-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation:
+      fadeIn 4s ease-in forwards,
+      bob 3.2s ease-in-out infinite 4s;
+  }
+
+  #cat {
+    display: block;
+    width: 220px;
+    height: auto;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-drag: none;
+    transform: scale(1);
+    transition: transform 0.2s ease-out;
+  }
+
+  #cat:hover {
+    transform: scale(1.08);
+  }
+
+  #cat:active {
+    transform: scale(0.96);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes bob {
+    0%   { margin-top: 0px; }
+    50%  { margin-top: -18px; }
+    100% { margin-top: 0px; }
+  }
+
+  .phrase {
+    position: absolute;
+    font-size: 22px;
+    font-weight: bold;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 5;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+  }
+
+  #hint {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #bbbbbb;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    opacity: 0;
+    animation: hintFade 2s ease-in forwards;
+    animation-delay: 4.5s;
+  }
+
+  @keyframes hintFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="cat-wrap">
+    <img id="cat" src="luckycat.gif" alt="Lucky Cat">
+  </div>
+  <div id="hint">click the cat ✦</div>
+</div>
+
+<audio id="bgm" src="Xi_Wangs_Theme.m4a" loop preload="auto"></audio>
+<audio id="meow1" src="meow1.m4a" preload="auto"></audio>
+<script>document.getElementById('meow1').volume = 0.5;</script>
+<audio id="meow2" src="meow2.m4a" preload="auto"></audio>
+
+<script>
+const phrases = [
+"you got this.","keep going.","you are capable.","trust yourself.","you are enough.",
+"believe in yourself.","keep creating.","make something weird.","your ideas matter.",
+"you have good energy.","something good is coming.","today is yours.","don't stop creating.",
+"you are doing great.","keep being you.","take up space.","your time is coming.",
+"keep dreaming.","make it happen.","you can do hard things.","keep your head up.",
+"good things take time.","you are on your way.","keep pushing forward.","your future is bright.",
+"you have what it takes.","trust the process.","keep showing up.","you are growing.",
+"you're closer than you think.","keep your spark.","your creativity is powerful.",
+"make your own rules.","think bigger.","dream louder.","create without fear.",
+"don't overthink it.","just start.","start messy.","keep experimenting.",
+"make something today.","your imagination matters.","your perspective is unique.",
+"nobody creates like you.","your voice matters.","your story matters.",
+"your ideas deserve space.","make room for possibility.","stay curious.","stay inspired.",
+"follow your weird ideas.","chase the feeling.","trust your instincts.","try something new.",
+"make the thing.","finish what you started.","begin again.","it's okay to restart.",
+"you haven't missed your chance.","there's still time.","your best is enough.",
+"progress is progress.","small steps count.","one step at a time.","keep moving.",
+"keep building.","keep learning.","keep growing.","keep becoming.",
+"you are becoming someone great.","future you is proud.","make future you proud.",
+"you're allowed to dream.","you're allowed to change.","you're allowed to begin.",
+"you're allowed to be different.","being different is good.","weird is wonderful.",
+"weird ideas win.","stay weird.","be unapologetically you.","you don't need permission.",
+"make your own path.","take the long way.","follow your curiosity.","follow your heart.",
+"follow the idea.","follow the spark.","trust the little voice.","listen to yourself.",
+"you know more than you think.","you are more ready than you think.",
+"you are stronger than you think.","you are further than you think.",
+"you've survived everything so far.","look how far you've come.","you've got momentum.",
+"keep that momentum.","don't dim your light.","let yourself shine.",
+"fortune favors the creative.","your next idea is waiting.","make something nobody asked for.",
+"go make something beautiful.","go make something ugly.","make something strange.",
+"make something unforgettable.","make something that feels like you.",
+"create first. explain later.","less thinking. more making.","your brain has good ideas.",
+"your weird idea might work.","what if you actually did it?","consider this your sign.",
+"this is your sign.","go for it.","why not?","try it anyway.","bet on yourself.",
+"bet on your ideas.","take the risk.","make the leap.","do it scared.","do it badly.",
+"do it anyway.","make mistakes beautifully.","mistakes are material.",
+"failure is part of it.","experimentation looks good on you.","curiosity looks good on you.",
+"creativity looks good on you.","you make ordinary things interesting.",
+"your brain is a playground.","play with the idea.","play with possibility.",
+"color outside the lines.","break the pattern.","bend the rules.","question everything.",
+"stay open.","stay playful.","stay curious, always.","keep your mind open.",
+"let yourself wander.","get lost creatively.","follow the rabbit hole.","see where it goes.",
+"let the idea breathe.","give yourself permission.","make room for magic.",
+"you are stronger every day.","you are making progress.","you are doing better than you think.",
+"you have so much potential.","you deserve good things.","you deserve to be proud of yourself.",
+"you are worthy of success.","you are worthy of happiness.","you are capable of more.",
+"you can handle this.","you can get through this.","you will figure it out.",
+"you will get there.","you are not behind.","your journey is your own.",
+"keep believing in yourself.","don't give up on yourself.","don't count yourself out.",
+"keep fighting for yourself.","keep choosing yourself.","keep putting yourself first.",
+"give yourself some credit.","be proud of your progress.","be proud of how far you've come.",
+"you have already overcome so much.","you've got more in you.","you are built for this.",
+"you are ready for what's next.","you can handle what's ahead.","brighter days are ahead.",
+"better days are coming.","your best days are ahead.","something good is around the corner.",
+"your breakthrough is coming.","your hard work will pay off.","your effort matters.",
+"every step forward counts.","keep taking the next step.","keep showing up for yourself.",
+"keep choosing progress.","keep moving forward.","keep pushing through.","don't lose hope.",
+"keep your faith in yourself.","believe that things can get better.","give yourself another chance.",
+"tomorrow is another opportunity.","you have a lot to look forward to.",
+"you've got this, seriously.","everything will work out."
+];
+
+const stage = document.getElementById('stage');
+const cat = document.getElementById('cat');
+const catWrap = document.getElementById('cat-wrap');
+const bgm = document.getElementById('bgm');
+const meow1 = document.getElementById('meow1');
+const meow2 = document.getElementById('meow2');
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+
+function randomColor() {
+  // vivid, visible-on-white colors
+  const h = Math.floor(rand(0, 360));
+  const s = Math.floor(rand(65, 95));
+  const l = Math.floor(rand(35, 55));
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+function spawnPhrase() {
+  const text = phrases[Math.floor(Math.random() * phrases.length)];
+  const el = document.createElement('div');
+  el.className = 'phrase';
+  el.textContent = text;
+  el.style.color = randomColor();
+
+  // figure out the cat's on-screen center and a safe radius that clears the image
+  const catRect = catWrap.getBoundingClientRect();
+  const centerX = catRect.left + catRect.width / 2;
+  const centerY = catRect.top + catRect.height / 2;
+  // half-diagonal of the cat image plus some breathing room so text never overlaps it
+  const safeRadius = Math.sqrt((catRect.width / 2) ** 2 + (catRect.height / 2) ** 2) + 40;
+
+  // pick a direction first, then place the phrase already out on the perimeter
+  const angle = rand(0, Math.PI * 2);
+  const dirX = Math.cos(angle);
+  const dirY = Math.sin(angle);
+
+  const startX = centerX + dirX * safeRadius;
+  const startY = centerY + dirY * safeRadius;
+
+  el.style.left = startX + 'px';
+  el.style.top = startY + 'px';
+
+  stage.appendChild(el);
+
+  // measure the text so we can keep it centered on its anchor point without drifting back over the cat
+  const rect = el.getBoundingClientRect();
+  const halfW = rect.width / 2;
+  const halfH = rect.height / 2;
+
+  // continue drifting further outward along the same direction, away from the cat
+  const distance = rand(140, 260);
+  const dx = dirX * distance;
+  const dy = dirY * distance;
+  const rotate = rand(-15, 15);
+
+  const duration = 7000;
+  const anim = el.animate([
+    { transform: `translate(${-halfW}px, ${-halfH}px) rotate(0deg)`, opacity: 0 },
+    { transform: `translate(${-halfW + dx * 0.15}px, ${-halfH + dy * 0.15}px) rotate(${rotate * 0.2}deg)`, opacity: 1, offset: 0.12 },
+    { transform: `translate(${-halfW + dx * 0.8}px, ${-halfH + dy * 0.8}px) rotate(${rotate * 0.8}deg)`, opacity: 1, offset: 0.7 },
+    { transform: `translate(${-halfW + dx}px, ${-halfH + dy}px) rotate(${rotate}deg)`, opacity: 0 }
+  ], {
+    duration: duration,
+    easing: 'ease-out',
+    fill: 'forwards'
+  });
+
+  anim.onfinish = () => el.remove();
+}
+
+function scheduleNextPhrase() {
+  const delay = rand(4000, 5000);
+  setTimeout(() => {
+    spawnPhrase();
+    scheduleNextPhrase();
+  }, delay);
+}
+
+// start the automatic phrase loop shortly after the cat appears
+setTimeout(() => {
+  spawnPhrase();
+  scheduleNextPhrase();
+}, 4200);
+
+cat.addEventListener('click', () => {
+  spawnPhrase();
+
+  if (Math.random() < 0.15) {
+    meow2.currentTime = 0;
+    meow2.play().catch(() => {});
+  } else {
+    meow1.currentTime = 0;
+    meow1.play().catch(() => {});
+  }
+});
+
+// attempt autoplay of background music; fall back to first user interaction
+function tryPlayBgm() {
+  bgm.volume = 0.6;
+  const p = bgm.play();
+  if (p !== undefined) {
+    p.catch(() => {
+      const resume = () => {
+        bgm.play().catch(() => {});
+        document.removeEventListener('click', resume);
+        document.removeEventListener('keydown', resume);
+      };
+      document.addEventListener('click', resume);
+      document.addEventListener('keydown', resume);
+    });
+  }
+}
+tryPlayBgm();
+</script>
+
+</body>
+</html>

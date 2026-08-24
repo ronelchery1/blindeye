@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receive Inspiration</title>
+<style>
+  :root{
+    --navy: #16294f;
+    --navy-soft: #2a3f6b;
+    --paper: #faf6ea;
+    --paper-shadow: rgba(22,41,79,0.25);
+    --gold: #cf9b3a;
+  }
+
+  @font-face {
+    /* Times New Roman is a system font; fall back gracefully */
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#fbe9a8;
+    font-family: "Times New Roman", Times, Georgia, serif;
+  }
+
+  /* ---------------- BACKGROUND ---------------- */
+  .bg-wrap{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    z-index:0;
+  }
+
+  .bg-img{
+    width:180vmax;
+    height:180vmax;
+    object-fit:cover;
+    transform-origin:center center;
+    animation: spin 55s linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes spin{
+    from{ transform: rotate(0deg); }
+    to{ transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .bg-img{ animation: none; }
+  }
+
+  /* ---------------- LAYOUT ---------------- */
+  .stage{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    padding: 5vh 6vw 5vh;
+    text-align:center;
+  }
+
+  .headline{
+    color:var(--navy);
+    font-weight:700;
+    font-size: clamp(28px, 6vw, 64px);
+    letter-spacing: 0.04em;
+    margin:0;
+    opacity:1;
+    transition: opacity 0.6s ease;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.5);
+  }
+
+  .headline.fade{
+    opacity:0;
+  }
+
+  .center-area{
+    position:relative;
+    flex:1;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* ---------------- COOKIE + WRAPPER ---------------- */
+  .cookie-stage{
+    position:relative;
+    width: min(46vmin, 380px);
+    height: min(46vmin, 380px);
+    cursor:pointer;
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .cookie-stage.hoverable:hover{
+    transform: scale(1.08);
+  }
+
+  .cookie-stage img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    user-select:none;
+    -webkit-user-drag:none;
+    pointer-events:none;
+    filter: drop-shadow(0 18px 30px rgba(22,41,79,0.35));
+  }
+
+  #img-wrapper{
+    z-index:3;
+    transition: opacity 0.7s ease;
+    transform: scale(1.35);
+    transform-origin: 50% 50%;
+  }
+  #img-wrapper.gone{
+    opacity:0;
+    pointer-events:none;
+  }
+
+  #img-cookie{
+    z-index:2;
+    transition: opacity 0.5s ease;
+  }
+  #img-cookie.bounce{
+    animation: cookie-bounce 0.4s cubic-bezier(.36,1.9,.4,1);
+  }
+  #img-cookie.broken{
+    opacity:0;
+  }
+
+  @keyframes cookie-bounce{
+    0%{   transform: scale(1)      translateY(0); }
+    30%{  transform: scale(0.9,1.08) translateY(2%); }
+    55%{  transform: scale(1.08,0.92) translateY(-6%); }
+    75%{  transform: scale(0.97,1.03) translateY(2%); }
+    100%{ transform: scale(1)      translateY(0); }
+  }
+
+  #img-cracked1, #img-cracked2{
+    z-index:4;
+    opacity:0;
+  }
+  #img-cracked1.fly{
+    animation: fly-left 1.1s ease forwards;
+  }
+  #img-cracked2.fly{
+    animation: fly-right 1.1s ease forwards;
+  }
+
+  @keyframes fly-left{
+    0%{ opacity:1; transform: translate(0,0) rotate(0deg) scale(1); }
+    100%{ opacity:0; transform: translate(-70%, 10%) rotate(-35deg) scale(0.85); }
+  }
+  @keyframes fly-right{
+    0%{ opacity:1; transform: translate(0,0) rotate(0deg) scale(1); }
+    100%{ opacity:0; transform: translate(70%, 10%) rotate(35deg) scale(0.85); }
+  }
+
+  /* ---------------- FORTUNE PAPER ---------------- */
+  .paper{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%,-50%) scale(0.15);
+    width: min(64vmin, 560px);
+    min-height: 150px;
+    padding: clamp(26px, 6vw, 46px) clamp(46px, 11vw, 76px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background-image: url('assets/paper.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    filter: drop-shadow(0 20px 30px var(--paper-shadow));
+    opacity:0;
+    z-index:5;
+    transition: opacity 0.3s ease, width 0.7s cubic-bezier(.2,.9,.25,1), min-height 0.7s cubic-bezier(.2,.9,.25,1), filter 0.7s ease;
+  }
+
+  .paper.show{
+    opacity:1;
+  }
+
+  .paper.grow{
+    animation: paper-grow 1.05s cubic-bezier(.2,.9,.25,1) forwards;
+  }
+
+  @keyframes paper-grow{
+    0%{ transform: translate(-50%,-50%) scale(0.12); }
+    70%{ transform: translate(-50%,-50%) scale(1.06); }
+    100%{ transform: translate(-50%,-50%) scale(1); }
+  }
+
+  .paper.expanded{
+    width: min(74vmin, 660px);
+    min-height: 190px;
+    filter: drop-shadow(0 26px 40px var(--paper-shadow));
+  }
+
+  .paper-text{
+    color: var(--navy);
+    font-size: clamp(14px, 1.8vw, 19px);
+    line-height:1.45;
+    font-style: italic;
+    font-weight:700;
+    opacity:0;
+    transition: opacity 0.8s ease 0.15s;
+  }
+  .paper-text.show{
+    opacity:1;
+  }
+
+  /* ---------------- FOOTER ---------------- */
+  .footer{
+    color: var(--navy);
+    min-height: 3.2em;
+  }
+
+  .footer-line1{
+    font-size: clamp(12px, 1.7vw, 16px);
+    letter-spacing: 0.08em;
+    opacity:1;
+    transition: opacity 0.6s ease;
+  }
+  .footer-line1.fade{
+    opacity:0;
+  }
+
+  .footer-line2{
+    margin-top:6px;
+    font-size: clamp(12px, 1.7vw, 16px);
+    font-weight:700;
+    letter-spacing: 0.06em;
+    cursor:pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity:0;
+    transition: opacity 0.6s ease, transform 0.15s ease;
+    pointer-events:none;
+  }
+  .footer-line2.show{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .footer-line2:hover{
+    transform: scale(1.04);
+  }
+  .footer-line2.hide{
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+
+  .footer-line3{
+    margin-top:6px;
+    font-size: clamp(11px, 1.5vw, 14px);
+    letter-spacing: 0.06em;
+    opacity:0;
+    transition: opacity 0.6s ease;
+  }
+  .footer-line3.show{
+    opacity:0.85;
+  }
+
+  .sound-hint{
+    position:fixed;
+    bottom:10px;
+    right:14px;
+    font-size:11px;
+    color: var(--navy-soft);
+    opacity:0.55;
+    z-index:6;
+    letter-spacing:0.05em;
+    font-family: Georgia, serif;
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-wrap">
+    <img class="bg-img" src="assets/background.png" alt="">
+  </div>
+
+  <div class="stage">
+    <h1 class="headline" id="headline">RECEIVE INSPIRATION</h1>
+
+    <div class="center-area">
+      <div class="cookie-stage hoverable" id="cookieStage">
+        <img id="img-cracked1" src="assets/cracked1.png" alt="">
+        <img id="img-cracked2" src="assets/cracked2.png" alt="">
+        <img id="img-cookie" src="assets/fortunecookie.png" alt="Fortune cookie">
+        <img id="img-wrapper" src="assets/wrapper.png" alt="Cookie wrapper">
+        <div class="paper" id="paper">
+          <div class="paper-text" id="paperText"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-line1" id="footerLine1">OPEN A FORTUNE COOKIE. MAKE SOMETHING NEW.</div>
+      <div class="footer-line2" id="footerLine2">NOT FEELING IT? REROLL</div>
+      <div class="footer-line3" id="footerLine3">POST YOUR CREATION AND TAG @BLINDEYECOLLECTIVE</div>
+    </div>
+  </div>
+
+  <div class="sound-hint">TAP ANYWHERE FOR SOUND</div>
+
+  <audio id="bgm" src="assets/jaydee43.m4a" loop preload="auto"></audio>
+  <audio id="sfxPlastic" src="assets/plastic.m4a" preload="auto"></audio>
+  <audio id="sfxBreak" src="assets/cookiebreak.m4a" preload="auto"></audio>
+  <audio id="sfxGong" src="assets/gong.m4a" preload="auto"></audio>
+  <audio id="sfxPaper" src="assets/paperpull.m4a" preload="auto"></audio>
+
+<script>
+(function(){
+  "use strict";
+
+  var FORTUNES = [
+    "Create a poster for a movie that doesn't exist.",
+    "Write a love letter to a place instead of a person.",
+    "Make a song that feels like 3 AM.",
+    "Design a shirt you'd wear if nobody could judge you.",
+    "Photograph something beautiful that nobody notices.",
+    "Paint something using only three colors.",
+    "Create a fake advertisement for your worst habit.",
+    "Write exactly 50 words about your childhood.",
+    "Film something ordinary like it's a horror movie.",
+    "Design a flag for a place that doesn't exist.",
+    "Make a piece of clothing that tells a story without words.",
+    "Create a song inspired by the weather today.",
+    "Paint your favorite memory without painting the people in it.",
+    "Take a photo that looks like a movie still.",
+    "Write from the perspective of your favorite object.",
+    "Design packaging for something completely useless.",
+    "Make a video where nothing happens.",
+    "Create an album cover for an artist who hasn't been born yet.",
+    "Make something your future self would be proud of.",
+    "Design a jacket inspired by your favorite memory.",
+    "Write a poem about something you lost but never owned.",
+    "Create a beat using sounds you recorded outside.",
+    "Draw something with your non-dominant hand.",
+    "Photograph the same object three different ways.",
+    "Design a poster using only two shapes.",
+    "Make a song that starts happy and ends sad.",
+    "Film your neighborhood like you're visiting it for the first time.",
+    "Create a piece of clothing with a secret message hidden inside.",
+    "Paint something that doesn't exist.",
+    "Write a story that begins with \"I shouldn't have opened it.\"",
+    "Design a logo without using any letters.",
+    "Create a video using only close-ups.",
+    "Make a song without using drums.",
+    "Photograph something you normally walk past.",
+    "Create something that represents where you came from.",
+    "Design a menu for a restaurant that only serves emotions.",
+    "Write a letter to yourself five years from now.",
+    "Make a shirt inspired by your childhood.",
+    "Paint an emotion without using its obvious color.",
+    "Film something from the perspective of an object.",
+    "Create a brand for a fictional underground club.",
+    "Make a song using a sound you normally wouldn't consider musical.",
+    "Photograph something that makes you nostalgic.",
+    "Write about a memory that may not have happened.",
+    "Design clothing for someone from another planet.",
+    "Create a fake documentary about something ridiculous.",
+    "Draw what your favorite song looks like.",
+    "Make something using a pattern you see every day.",
+    "Create a song that feels like driving at night.",
+    "Take a picture using only shadows.",
+    "Design something for someone living 100 years in the future.",
+    "Write a poem using only one-syllable words.",
+    "Make a video that starts at the end.",
+    "Create an outfit based on your favorite color.",
+    "Paint something ugly until it becomes beautiful.",
+    "Design a warning sign for something that isn't dangerous.",
+    "Make something that represents freedom.",
+    "Create a beat inspired by your favorite place.",
+    "Photograph something from a perspective you've never tried.",
+    "Write a story that takes place entirely inside an elevator.",
+    "Design a shirt based on the last song you listened to.",
+    "Create a piece using only lines.",
+    "Film the same place in the morning and at night.",
+    "Make a song about something nobody thinks deserves a song.",
+    "Design a product that solves a problem nobody has.",
+    "Take a photo that tells a story without people.",
+    "Write a letter you'll never send.",
+    "Create a piece of clothing that looks completely different from the back.",
+    "Paint a place you've never been.",
+    "Make a commercial for something nobody would buy.",
+    "Design a magazine cover about yourself without using your name.",
+    "Create a song using only three sounds.",
+    "Photograph something that represents your childhood.",
+    "Write a poem about a sound.",
+    "Design clothing for a fictional sports team.",
+    "Make a 10-second film with no dialogue.",
+    "Create art using only circles.",
+    "Design a website for a place you wish existed.",
+    "Write a story in exactly 100 words.",
+    "Make something about a person you're grateful for.",
+    "Create a beat using only things you can hit with your hands.",
+    "Photograph something without showing its full shape.",
+    "Design something you'd wear in a dream.",
+    "Paint the feeling of being alone in a crowded room.",
+    "Film a place where you feel safe.",
+    "Create a logo for a company that sells nothing.",
+    "Write about the last time you felt completely free.",
+    "Make a piece of clothing that represents your favorite memory.",
+    "Create a song that sounds like a memory.",
+    "Photograph something that could be an album cover.",
+    "Design a billboard that only one person would understand.",
+    "Draw a place you've never been.",
+    "Make a video that feels like a dream you can't remember.",
+    "Write a song about someone you haven't met yet.",
+    "Create a fashion collection inspired by your neighborhood.",
+    "Paint something inspired by the last thing you touched.",
+    "Film something without showing a person's face.",
+    "Design a piece of clothing inspired by your childhood.",
+    "Write about a memory you wish you could relive.",
+    "Take a photograph with no obvious subject.",
+    "Make a song inspired by the last photograph you took.",
+    "Design a poster for the best day of your life.",
+    "Create a self-portrait without drawing your face.",
+    "Write a story where nobody tells the truth.",
+    "Film something that looks ordinary but feels important.",
+    "Make a shirt inspired by something you're afraid of.",
+    "Photograph something at the exact moment nobody expects.",
+    "Create a visual identity for a fake conspiracy theory.",
+    "Paint something that reminds you of home.",
+    "Write a poem about something ordinary.",
+    "Create clothing for the year 2099.",
+    "Make a beat inspired by your favorite place.",
+    "Design a product that should never exist.",
+    "Photograph something you would want to remember forever.",
+    "Write a story from the perspective of someone who doesn't exist.",
+    "Create something for the person you want to become.",
+    "Design a shirt for a person who doesn't exist.",
+    "Make a video using only five shots.",
+    "Paint what your favorite place feels like.",
+    "Create a song that could only be played once.",
+    "Photograph something using only natural light.",
+    "Design something using only things you can find in your room.",
+    "Write a story that starts with the ending.",
+    "Create a uniform for people who don't follow rules.",
+    "Make a song about something you're afraid to say.",
+    "Draw something from memory without looking it up.",
+    "Film something beautiful that people normally ignore.",
+    "Design a piece of clothing that represents your current chapter.",
+    "Paint a sunset on another planet.",
+    "Write a letter to someone who will never read it.",
+    "Create a poster for a fictional event.",
+    "Make a beat using sounds from your kitchen.",
+    "Photograph two things that don't belong together.",
+    "Design a shirt inspired by your favorite place.",
+    "Write about a person without describing their appearance.",
+    "Make a video that tells a story without dialogue.",
+    "Create art using a material you've never used before.",
+    "Design a piece of clothing that you'd want to find in a thrift store 50 years from now.",
+    "Make a song that feels like a place you've never visited.",
+    "Photograph a reflection and capture what's hiding inside it.",
+    "Create something about a mistake you've made.",
+    "Write a poem about something you're grateful for.",
+    "Design clothing for someone who lives in a completely different world.",
+    "Film a place you normally ignore.",
+    "Paint something that represents your biggest fear.",
+    "Create an album cover for a song that doesn't exist.",
+    "Make a photograph that could be mistaken for a painting.",
+    "Write a story about finding something you thought you'd lost forever.",
+    "Design a logo for a fictional sports team.",
+    "Create a beat that sounds like walking through your neighborhood.",
+    "Make something that reminds you why you started creating.",
+    "Photograph something that looks different at night.",
+    "Write a poem about a person you miss.",
+    "Design a shirt inspired by a childhood memory.",
+    "Make a short film about waiting for something.",
+    "Paint something using colors you normally wouldn't choose.",
+    "Create a song about a place you miss.",
+    "Design a room you'd want to live in forever.",
+    "Write a story about a stranger you saw today.",
+    "Photograph something from a completely unusual angle.",
+    "Make a piece of clothing that represents freedom.",
+    "Create a poster for a fictional band.",
+    "Film something moving without using slow motion.",
+    "Paint something that represents your current mood.",
+    "Write about something you don't have the words for.",
+    "Design something for a world where nobody uses phones.",
+    "Make a song using only sounds you recorded yourself.",
+    "Photograph something that tells a story without showing the subject.",
+    "Create a painting inspired by your favorite song.",
+    "Write a story about a place that no longer exists.",
+    "Design a piece of clothing inspired by your neighborhood.",
+    "Make a video that lasts exactly 15 seconds.",
+    "Create a song that starts with silence.",
+    "Photograph something you see every day as if you've never seen it before.",
+    "Write a poem about the feeling of being somewhere familiar.",
+    "Design a product you'd actually want to invent.",
+    "Paint something inspired by a dream you remember.",
+    "Film your morning routine like it's a movie.",
+    "Create a shirt with a message hidden somewhere unexpected.",
+    "Make a beat from everyday household sounds.",
+    "Photograph something that makes you feel calm.",
+    "Write about the person you want to become.",
+    "Design an outfit inspired by a movie.",
+    "Create a song inspired by your favorite smell.",
+    "Paint something that makes you nostalgic.",
+    "Make a video that begins with the most important moment.",
+    "Photograph something beautiful in an ugly place.",
+    "Write a story about someone receiving a letter from their future self.",
+    "Design a logo for a fictional restaurant.",
+    "Create clothing inspired by a piece of music.",
+    "Make something about a moment you wish you could relive.",
+    "Photograph a place where you feel at home.",
+    "Write a poem about a color.",
+    "Create a painting using only geometric shapes.",
+    "Film something that normally wouldn't be considered interesting.",
+    "Design something for someone who has never seen Earth.",
+    "Make a song about a person without saying their name.",
+    "Photograph an object from three completely different perspectives.",
+    "Write a story about someone who wakes up somewhere unfamiliar.",
+    "Create a piece of clothing inspired by a memory.",
+    "Paint something that represents a dream you have.",
+    "Design a poster using only typography.",
+    "Make a video without showing any faces.",
+    "Create a song inspired by the sound of rain.",
+    "Photograph something you want to remember forever.",
+    "Write a letter to your younger self.",
+    "Design a clothing piece inspired by something you hate.",
+    "Paint something without using your dominant hand.",
+    "Film something that happens every day but make it feel extraordinary.",
+    "Create a beat using only one sound.",
+    "Photograph something that represents where you're from.",
+    "Write about the last time you felt completely free.",
+    "Design a fictional brand that you'd actually buy from.",
+    "Create a piece of art about something you can't explain.",
+    "Make a song that feels like the end of summer.",
+    "Photograph something that nobody else would think to photograph.",
+    "Write a poem about a place instead of a person.",
+    "Design a piece of clothing that you'd want to wear 20 years from now.",
+    "Create something that represents who you are without using your name."
+  ];
+
+  var STORAGE_KEY_NEXT = "fc_nextTime";
+  var STORAGE_KEY_FORTUNE = "fc_fortune";
+  var STORAGE_KEY_REROLL = "fc_rerollUsed";
+  var STORAGE_KEY_CATEGORY = "fc_lastCategory";
+  var DAY_MS = 24 * 60 * 60 * 1000;
+
+  var headline = document.getElementById("headline");
+  var footerLine1 = document.getElementById("footerLine1");
+  var footerLine2 = document.getElementById("footerLine2");
+  var footerLine3 = document.getElementById("footerLine3");
+  var cookieStage = document.getElementById("cookieStage");
+  var imgWrapper = document.getElementById("img-wrapper");
+  var imgCookie = document.getElementById("img-cookie");
+  var imgCracked1 = document.getElementById("img-cracked1");
+  var imgCracked2 = document.getElementById("img-cracked2");
+  var paper = document.getElementById("paper");
+  var paperText = document.getElementById("paperText");
+  var soundHint = document.querySelector(".sound-hint");
+
+  var bgm = document.getElementById("bgm");
+  var sfxPlastic = document.getElementById("sfxPlastic");
+  var sfxBreak = document.getElementById("sfxBreak");
+  var sfxGong = document.getElementById("sfxGong");
+  var sfxPaper = document.getElementById("sfxPaper");
+  var hitSrcs = ["assets/hitsfx1.m4a","assets/hitsfx2.m4a","assets/hitsfx3.m4a","assets/hitsfx4.m4a"];
+
+  var stageState = "unwrapped"; // unwrapped -> cracking -> broken
+  var clickCount = 0;
+  var CLICKS_TO_BREAK = 7;
+  var audioStarted = false;
+
+  var COOKIE_STAGE_IMAGES = {
+    1: "assets/fortunecookie2.png",
+    3: "assets/fortunecookie3.png",
+    5: "assets/fortunecookie4.png"
+  };
+
+  function startBgm(){
+    if(audioStarted) return;
+    audioStarted = true;
+    bgm.volume = 0.55;
+    bgm.play().catch(function(){});
+    if(soundHint) soundHint.style.display = "none";
+  }
+  document.addEventListener("pointerdown", startBgm, {once:true});
+
+  var lastHitSrc = null;
+  var lastHitStreak = 0;
+
+  function playHit(){
+    var candidates = hitSrcs;
+    if(lastHitStreak >= 2){
+      candidates = hitSrcs.filter(function(s){ return s !== lastHitSrc; });
+    }
+    var src = candidates[Math.floor(Math.random() * candidates.length)];
+
+    if(src === lastHitSrc){
+      lastHitStreak++;
+    } else {
+      lastHitSrc = src;
+      lastHitStreak = 1;
+    }
+
+    var a = new Audio(src);
+    a.volume = 0.85;
+    a.play().catch(function(){});
+  }
+
+  var CATEGORY_RULES = [
+    ["music",       /\b(song|beat|album|chorus|lyrics|drum|drums)\b/],
+    ["photography", /\b(photograph|photo|picture)\b/],
+    ["film",        /\b(film|video|documentary)\b/],
+    ["painting",    /\bpaint(s|ed|ing)?\b/],
+    ["drawing",     /\bdraw(ing|s)?\b/],
+    ["writing",     /\b(write|writing|poem|story|letter)\b/],
+    ["fashion",     /\b(shirt|clothing|jacket|outfit|fashion|uniform)\b/],
+    ["design",      /\bdesign\b/]
+  ];
+
+  function categorize(text){
+    var t = text.toLowerCase();
+    for(var i = 0; i < CATEGORY_RULES.length; i++){
+      if(CATEGORY_RULES[i][1].test(t)) return CATEGORY_RULES[i][0];
+    }
+    return "general";
+  }
+
+  function pickFortune(excludeText, excludeCategory){
+    var pool = FORTUNES.filter(function(f){
+      if(excludeText && f === excludeText) return false;
+      if(excludeCategory && categorize(f) === excludeCategory) return false;
+      return true;
+    });
+    if(pool.length === 0){
+      pool = FORTUNES.filter(function(f){ return !excludeText || f !== excludeText; });
+    }
+    if(pool.length === 0){
+      pool = FORTUNES;
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function setHeadline(text){
+    headline.classList.add("fade");
+    setTimeout(function(){
+      headline.textContent = text;
+      headline.classList.remove("fade");
+    }, 600);
+  }
+
+  function crackWrapperOff(){
+    if(stageState !== "unwrapped") return;
+    stageState = "cracking";
+    sfxPlastic.currentTime = 0;
+    sfxPlastic.play().catch(function(){});
+    imgWrapper.classList.add("gone");
+
+    setHeadline("BREAK THE COOKIE");
+    footerLine1.classList.add("fade");
+  }
+
+  function handleCookieClick(){
+    if(stageState === "unwrapped"){
+      crackWrapperOff();
+      return;
+    }
+    if(stageState !== "cracking") return;
+
+    clickCount++;
+    playHit();
+    imgCookie.classList.remove("bounce");
+    void imgCookie.offsetWidth; // restart animation
+    imgCookie.classList.add("bounce");
+
+    if(COOKIE_STAGE_IMAGES[clickCount]){
+      imgCookie.src = COOKIE_STAGE_IMAGES[clickCount];
+    }
+
+    if(clickCount >= CLICKS_TO_BREAK){
+      breakCookie();
+    }
+  }
+
+  cookieStage.addEventListener("click", handleCookieClick);
+
+  var isRerollFlow = false;
+
+  function breakCookie(){
+    stageState = "broken";
+    cookieStage.classList.remove("hoverable");
+
+    imgCookie.classList.add("broken");
+    imgCracked1.classList.add("fly");
+    imgCracked2.classList.add("fly");
+
+    sfxBreak.currentTime = 0;
+    sfxBreak.play().catch(function(){});
+    sfxGong.currentTime = 0;
+    sfxGong.play().catch(function(){});
+
+    var fortune = pickFortune(null, localStorage.getItem(STORAGE_KEY_CATEGORY));
+
+    revealPaper(fortune, function(){
+      localStorage.setItem(STORAGE_KEY_FORTUNE, fortune);
+      localStorage.setItem(STORAGE_KEY_CATEGORY, categorize(fortune));
+
+      if(isRerollFlow){
+        isRerollFlow = false;
+        setHeadline("NOW GO CREATE.");
+        footerLine1.classList.remove("fade");
+        footerLine3.classList.add("show");
+        updateRerollButtonState(parseInt(localStorage.getItem(STORAGE_KEY_REROLL) || "0", 10));
+        startCountdown(parseInt(localStorage.getItem(STORAGE_KEY_NEXT), 10));
+      } else {
+        var nextTime = Date.now() + DAY_MS;
+        localStorage.setItem(STORAGE_KEY_NEXT, String(nextTime));
+        localStorage.setItem(STORAGE_KEY_REROLL, "0");
+        setHeadline("NOW GO CREATE.");
+        showFinalFooter();
+        startCountdown(nextTime);
+      }
+    });
+  }
+
+  function revealPaper(fortuneText, onComplete){
+    paperText.textContent = fortuneText;
+    paper.classList.add("show");
+
+    setTimeout(function(){
+      paper.classList.add("grow");
+      sfxPaper.currentTime = 0;
+      sfxPaper.play().catch(function(){});
+      setTimeout(function(){
+        paperText.classList.add("show");
+      }, 500);
+    }, 550);
+
+    setTimeout(function(){
+      paper.classList.add("expanded");
+    }, 1150);
+
+    setTimeout(function(){
+      if(onComplete) onComplete();
+    }, 1900);
+  }
+
+  var MAX_REROLLS = 2;
+  var REROLL_LABEL_DEFAULT = "NOT FEELING IT? REROLL";
+  var REROLL_LABEL_LAST = "ONE LAST REROLL";
+
+  function updateRerollButtonState(count){
+    if(count >= MAX_REROLLS){
+      footerLine2.classList.add("hide");
+      return;
+    }
+    footerLine2.textContent = (count === 1) ? REROLL_LABEL_LAST : REROLL_LABEL_DEFAULT;
+    footerLine2.classList.remove("hide");
+    footerLine2.classList.add("show");
+  }
+
+  function showFinalFooter(){
+    footerLine1.classList.remove("fade");
+    updateRerollButtonState(0);
+    footerLine3.classList.add("show");
+  }
+
+  function startUnwrapSequence(){
+    stageState = "unwrapped";
+    clickCount = 0;
+
+    imgWrapper.classList.remove("gone");
+    imgCookie.classList.remove("broken");
+    imgCookie.classList.remove("bounce");
+    imgCookie.src = "assets/fortunecookie.png";
+    imgCracked1.classList.remove("fly");
+    imgCracked2.classList.remove("fly");
+    paper.classList.remove("show", "grow", "expanded");
+    paper.style.transform = "";
+    paperText.classList.remove("show");
+    cookieStage.classList.add("hoverable");
+
+    setHeadline("RECEIVE INSPIRATION");
+    footerLine1.textContent = "OPEN A FORTUNE COOKIE. MAKE SOMETHING NEW.";
+    footerLine1.classList.remove("fade");
+    footerLine3.classList.remove("show");
+  }
+
+  footerLine2.addEventListener("click", function(){
+    if(footerLine2.classList.contains("hide")) return;
+    if(stageState !== "broken") return;
+
+    var count = parseInt(localStorage.getItem(STORAGE_KEY_REROLL) || "0", 10);
+    if(count >= MAX_REROLLS) return;
+
+    count++;
+    localStorage.setItem(STORAGE_KEY_REROLL, String(count));
+
+    isRerollFlow = true;
+    if(countdownInterval) clearInterval(countdownInterval);
+    footerLine2.classList.add("hide");
+    footerLine2.classList.remove("show");
+
+    startUnwrapSequence();
+  });
+
+  var countdownInterval = null;
+  function startCountdown(nextTime){
+    if(countdownInterval) clearInterval(countdownInterval);
+    updateCountdown(nextTime);
+    countdownInterval = setInterval(function(){
+      updateCountdown(nextTime);
+    }, 1000);
+  }
+
+  function updateCountdown(nextTime){
+    var remaining = nextTime - Date.now();
+    if(remaining <= 0){
+      clearInterval(countdownInterval);
+      resetExperience();
+      return;
+    }
+    var h = Math.floor(remaining / 3600000);
+    var m = Math.floor((remaining % 3600000) / 60000);
+    var s = Math.floor((remaining % 60000) / 1000);
+    function pad(n){ return (n < 10 ? "0" : "") + n; }
+    footerLine1.textContent = "ANOTHER FORTUNE IN 24 HOURS: " + pad(h) + ":" + pad(m) + ":" + pad(s);
+  }
+
+  function resetExperience(){
+    localStorage.removeItem(STORAGE_KEY_NEXT);
+    localStorage.removeItem(STORAGE_KEY_FORTUNE);
+    localStorage.removeItem(STORAGE_KEY_REROLL);
+    window.location.reload();
+  }
+
+  function restoreFromStorage(){
+    var nextTimeStr = localStorage.getItem(STORAGE_KEY_NEXT);
+    if(!nextTimeStr) return false;
+    var nextTime = parseInt(nextTimeStr, 10);
+    if(isNaN(nextTime) || Date.now() >= nextTime){
+      localStorage.removeItem(STORAGE_KEY_NEXT);
+      localStorage.removeItem(STORAGE_KEY_FORTUNE);
+      localStorage.removeItem(STORAGE_KEY_REROLL);
+      return false;
+    }
+
+    stageState = "broken";
+    cookieStage.classList.remove("hoverable");
+    imgWrapper.classList.add("gone");
+    imgCookie.classList.add("broken");
+    imgCracked1.style.display = "none";
+    imgCracked2.style.display = "none";
+
+    var fortune = localStorage.getItem(STORAGE_KEY_FORTUNE) || pickFortune();
+    paperText.textContent = fortune;
+    paper.classList.add("show");
+    paper.classList.add("expanded");
+    paper.style.transform = "translate(-50%,-50%) scale(1)";
+    paperText.classList.add("show");
+
+    headline.textContent = "NOW GO CREATE.";
+    footerLine1.classList.remove("fade");
+    footerLine3.classList.add("show");
+    updateRerollButtonState(parseInt(localStorage.getItem(STORAGE_KEY_REROLL) || "0", 10));
+
+    startCountdown(nextTime);
+    return true;
+  }
+
+  restoreFromStorage();
+
+})();
+</script>
+</body>
+</html>
