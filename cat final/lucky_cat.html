@@ -18,6 +18,7 @@
     position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden;
   }
 
   #cat-wrap {
@@ -188,47 +189,124 @@ function randomColor() {
 function spawnPhrase() {
   const text = phrases[Math.floor(Math.random() * phrases.length)];
   const el = document.createElement('div');
+
   el.className = 'phrase';
   el.textContent = text;
   el.style.color = randomColor();
 
-  // figure out the cat's on-screen center and a safe radius that clears the image
+  const stageRect = stage.getBoundingClientRect();
   const catRect = catWrap.getBoundingClientRect();
-  const centerX = catRect.left + catRect.width / 2;
-  const centerY = catRect.top + catRect.height / 2;
-  // half-diagonal of the cat image plus some breathing room so text never overlaps it
-  const safeRadius = Math.sqrt((catRect.width / 2) ** 2 + (catRect.height / 2) ** 2) + 40;
 
-  // pick a direction first, then place the phrase already out on the perimeter
+  // Convert the cat's viewport position into stage-relative coordinates
+  const centerX =
+    catRect.left - stageRect.left + catRect.width / 2;
+
+  const centerY =
+    catRect.top - stageRect.top + catRect.height / 2;
+
+  const safeRadius =
+    Math.sqrt(
+      (catRect.width / 2) ** 2 +
+      (catRect.height / 2) ** 2
+    ) + 40;
+
   const angle = rand(0, Math.PI * 2);
   const dirX = Math.cos(angle);
   const dirY = Math.sin(angle);
 
-  const startX = centerX + dirX * safeRadius;
-  const startY = centerY + dirY * safeRadius;
+  let startX = centerX + dirX * safeRadius;
+  let startY = centerY + dirY * safeRadius;
 
-  el.style.left = startX + 'px';
-  el.style.top = startY + 'px';
-
+  // Put the phrase on the stage before measuring it
   stage.appendChild(el);
 
-  // measure the text so we can keep it centered on its anchor point without drifting back over the cat
   const rect = el.getBoundingClientRect();
   const halfW = rect.width / 2;
   const halfH = rect.height / 2;
 
-  // continue drifting further outward along the same direction, away from the cat
-  const distance = rand(140, 260);
+  const stageWidth = stageRect.width;
+  const stageHeight = stageRect.height;
+
+  // Keep the starting point inside the stage
+  startX = Math.max(
+    halfW,
+    Math.min(stageWidth - halfW, startX)
+  );
+
+  startY = Math.max(
+    halfH,
+    Math.min(stageHeight - halfH, startY)
+  );
+
+  el.style.left = startX + 'px';
+  el.style.top = startY + 'px';
+
+  // Calculate how far the phrase can travel without leaving the stage
+  let maxDistance = 260;
+
+  if (dirX > 0) {
+    maxDistance = Math.min(
+      maxDistance,
+      (stageWidth - halfW - startX) / dirX
+    );
+  } else {
+    maxDistance = Math.min(
+      maxDistance,
+      (halfW - startX) / dirX
+    );
+  }
+
+  if (dirY > 0) {
+    maxDistance = Math.min(
+      maxDistance,
+      (stageHeight - halfH - startY) / dirY
+    );
+  } else {
+    maxDistance = Math.min(
+      maxDistance,
+      (halfH - startY) / dirY
+    );
+  }
+
+  const distance = Math.max(
+    0,
+    Math.min(rand(140, 260), maxDistance)
+  );
+
   const dx = dirX * distance;
   const dy = dirY * distance;
   const rotate = rand(-15, 15);
 
   const duration = 7000;
+
   const anim = el.animate([
-    { transform: `translate(${-halfW}px, ${-halfH}px) rotate(0deg)`, opacity: 0 },
-    { transform: `translate(${-halfW + dx * 0.15}px, ${-halfH + dy * 0.15}px) rotate(${rotate * 0.2}deg)`, opacity: 1, offset: 0.12 },
-    { transform: `translate(${-halfW + dx * 0.8}px, ${-halfH + dy * 0.8}px) rotate(${rotate * 0.8}deg)`, opacity: 1, offset: 0.7 },
-    { transform: `translate(${-halfW + dx}px, ${-halfH + dy}px) rotate(${rotate}deg)`, opacity: 0 }
+    {
+      transform: `translate(${-halfW}px, ${-halfH}px) rotate(0deg)`,
+      opacity: 0
+    },
+    {
+      transform: `translate(
+        ${-halfW + dx * 0.15}px,
+        ${-halfH + dy * 0.15}px
+      ) rotate(${rotate * 0.2}deg)`,
+      opacity: 1,
+      offset: 0.12
+    },
+    {
+      transform: `translate(
+        ${-halfW + dx * 0.8}px,
+        ${-halfH + dy * 0.8}px
+      ) rotate(${rotate * 0.8}deg)`,
+      opacity: 1,
+      offset: 0.7
+    },
+    {
+      transform: `translate(
+        ${-halfW + dx}px,
+        ${-halfH + dy}px
+      ) rotate(${rotate}deg)`,
+      opacity: 0
+    }
   ], {
     duration: duration,
     easing: 'ease-out',
