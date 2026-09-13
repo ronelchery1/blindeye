@@ -582,8 +582,7 @@
   var CLICKS_TO_BREAK = 7;
   var audioStarted = false;
 
-  var COOKIE_CLICK_IMAGES = ["assets/cookiestage1.png", "assets/cookiestage2.png", "assets/cookiestage3.png"];
-  var lastCookieImg = null;
+  var COOKIE_CLICK_IMAGES = ["assets/cookiestage1.png", "assets/cookiestage2.png", "assets/cookiestage3.png", "assets/fortunecookie.png"];
 
   function startBgm(){
     if(audioStarted) return;
@@ -683,10 +682,8 @@
     imgCookie.classList.add("bounce");
 
     if(clickCount < CLICKS_TO_BREAK){
-      var candidates = COOKIE_CLICK_IMAGES.filter(function(s){ return s !== lastCookieImg; });
-      var nextImg = candidates[Math.floor(Math.random() * candidates.length)];
-      imgCookie.src = nextImg;
-      lastCookieImg = nextImg;
+      var idx = (clickCount - 1) % COOKIE_CLICK_IMAGES.length;
+      imgCookie.src = COOKIE_CLICK_IMAGES[idx];
     }
 
     if(clickCount >= CLICKS_TO_BREAK){
@@ -780,7 +777,6 @@
   function startUnwrapSequence(){
     stageState = "unwrapped";
     clickCount = 0;
-    lastCookieImg = null;
 
     imgWrapper.classList.remove("gone");
     imgCookie.classList.remove("broken");
