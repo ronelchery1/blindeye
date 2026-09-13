@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>0912</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .gif-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .gif-container img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 15%;
+    display: block;
+    transform-origin: center center;
+    animation: handheld 14s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  @keyframes handheld {
+    0%   { transform: translate(-50%, -50%) scale(1.03) translate(0px, 0px) rotate(0deg); }
+    12%  { transform: translate(-50%, -50%) scale(1.032) translate(-3px, 2px) rotate(-0.15deg); }
+    24%  { transform: translate(-50%, -50%) scale(1.035) translate(2px, -3px) rotate(0.12deg); }
+    37%  { transform: translate(-50%, -50%) scale(1.031) translate(-2px, -3px) rotate(-0.1deg); }
+    50%  { transform: translate(-50%, -50%) scale(1.036) translate(3px, 1px) rotate(0.17deg); }
+    63%  { transform: translate(-50%, -50%) scale(1.032) translate(-3px, 3px) rotate(-0.12deg); }
+    76%  { transform: translate(-50%, -50%) scale(1.034) translate(2px, -2px) rotate(0.1deg); }
+    88%  { transform: translate(-50%, -50%) scale(1.03) translate(-2px, -1px) rotate(-0.08deg); }
+    100% { transform: translate(-50%, -50%) scale(1.03) translate(0px, 0px) rotate(0deg); }
+  }
+
+  .controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 14px;
+    z-index: 10;
+  }
+
+  .audio-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(20, 20, 20, 0.35);
+    backdrop-filter: blur(4px);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .audio-btn:hover {
+    transform: scale(1.08);
+    background: rgba(20, 20, 20, 0.5);
+  }
+
+  .audio-btn:active {
+    transform: scale(0.96);
+  }
+
+  .audio-btn svg {
+    width: 24px;
+    height: 24px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+  }
+
+  .audio-btn.muted svg {
+    opacity: 0.45;
+  }
+</style>
+</head>
+<body>
+
+  <div class="gif-container">
+    <img src="storefront2.png" alt="storefront">
+  </div>
+
+  <div class="controls">
+    <button class="audio-btn muted" id="ambienceBtn" aria-label="Toggle ambience sound" title="Ambience">
+      <!-- speaker / sound icon -->
+      <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" id="ambienceIcon">
+        <path d="M3 10v4h4l5 5V5L7 10H3z"/>
+        <path d="M16.5 12c0-1.77-.77-3.29-2-4.28v8.56c1.23-.99 2-2.51 2-4.28z"/>
+        <path d="M14.5 3.23v2.06c2.89 1.04 5 3.77 5 6.71s-2.11 5.67-5 6.71v2.06c4.01-1.09 7-4.83 7-8.77s-2.99-7.68-7-8.77z"/>
+      </svg>
+    </button>
+
+    <button class="audio-btn muted" id="songBtn" aria-label="Toggle music" title="Music">
+      <!-- music note icon -->
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="songIcon">
+        <path d="M9 17.5V5.5l10-2v11.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="6.5" cy="17.5" r="2.5" fill="white"/>
+        <circle cx="16.5" cy="15.5" r="2.5" fill="white"/>
+      </svg>
+    </button>
+  </div>
+
+  <audio id="ambienceAudio" src="ambience.mp3" loop preload="auto"></audio>
+  <audio id="songAudio" src="song.mp3" loop preload="auto"></audio>
+
+  <script>
+    const ambienceAudio = document.getElementById('ambienceAudio');
+    const songAudio = document.getElementById('songAudio');
+    const ambienceBtn = document.getElementById('ambienceBtn');
+    const songBtn = document.getElementById('songBtn');
+
+    let ambienceOn = false;
+    let songOn = false;
+
+    function toggleAmbience() {
+      if (ambienceOn) {
+        ambienceAudio.pause();
+        ambienceBtn.classList.add('muted');
+      } else {
+        ambienceAudio.play().catch(() => {});
+        ambienceBtn.classList.remove('muted');
+      }
+      ambienceOn = !ambienceOn;
+    }
+
+    function toggleSong() {
+      if (songOn) {
+        songAudio.pause();
+        songBtn.classList.add('muted');
+      } else {
+        songAudio.play().catch(() => {});
+        songBtn.classList.remove('muted');
+      }
+      songOn = !songOn;
+    }
+
+    ambienceBtn.addEventListener('click', toggleAmbience);
+    songBtn.addEventListener('click', toggleSong);
+
+    // Try to autoplay both tracks as soon as the page opens.
+    // Most browsers block unmuted autoplay until the user interacts with
+    // the page at least once, so we attempt immediately and, if blocked,
+    // fall back to starting on the very first click/tap/key anywhere.
+    function attemptAutoplay() {
+      ambienceAudio.play()
+        .then(() => {
+          ambienceOn = true;
+          ambienceBtn.classList.remove('muted');
+        })
+        .catch(() => {});
+
+      songAudio.play()
+        .then(() => {
+          songOn = true;
+          songBtn.classList.remove('muted');
+        })
+        .catch(() => {});
+    }
+
+    attemptAutoplay();
+
+    function startOnFirstInteraction() {
+      if (!ambienceOn) {
+        ambienceAudio.play().catch(() => {});
+        ambienceOn = true;
+        ambienceBtn.classList.remove('muted');
+      }
+      if (!songOn) {
+        songAudio.play().catch(() => {});
+        songOn = true;
+        songBtn.classList.remove('muted');
+      }
+      window.removeEventListener('pointerdown', startOnFirstInteraction);
+      window.removeEventListener('keydown', startOnFirstInteraction);
+    }
+
+    window.addEventListener('pointerdown', startOnFirstInteraction);
+    window.addEventListener('keydown', startOnFirstInteraction);
+  </script>
+
+</body>
+</html>
